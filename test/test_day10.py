@@ -1,5 +1,5 @@
 import unittest
-import day10
+from src import day10
 
 class TestDay10(unittest.TestCase):
     def test_part_one_simple(self):

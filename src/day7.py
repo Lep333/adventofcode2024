@@ -1,6 +1,6 @@
 from itertools import product
 
-input_file_path = "day7input.txt"
+input_file_path = "input/day7input.txt"
 
 def part_one():
     with open(input_file_path, "r") as f:

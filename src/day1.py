@@ -1,4 +1,4 @@
-input_file_path = "day1input.txt"
+input_file_path = "input/day1input.txt"
 
 def parse(list_left: list, list_right: list):
     with open(input_file_path, "r") as f:

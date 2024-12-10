@@ -1,4 +1,4 @@
-input_file_path = "day10input.txt"
+input_file_path = "input/day10input.txt"
 
 def parse() -> list:
     map = []
@@ -11,11 +11,7 @@ def parse() -> list:
 def part_one(map: list) -> int:
     starting_points = get_trail_heads(map)
 
-    row_count = len(map)
-    col_count = len(map[0])
     total_routes = 0
-    neighbour_directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-
     # calculate all trails
     for y, x in starting_points:
         queue = [(y, x)]
@@ -25,9 +21,7 @@ def part_one(map: list) -> int:
 def part_two(map: list) -> int:
     starting_points = get_trail_heads(map)
     
-
     total_routes = 0
-
     # calculate all trails
     for y, x in starting_points:
         queue = [(y, x)]

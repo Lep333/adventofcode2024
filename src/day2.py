@@ -1,4 +1,4 @@
-input_file_path = "day2input.txt"
+input_file_path = "input/day2input.txt"
 
 def parse() -> list:
     reports = []

@@ -1,5 +1,5 @@
 import re
-input_file_path = "day3input.txt"
+input_file_path = "input/day3input.txt"
 
 def part_one():
     with open(input_file_path, "r") as f:

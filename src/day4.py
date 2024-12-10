@@ -1,4 +1,4 @@
-input_file_path = "day4input.txt"
+input_file_path = "input/day4input.txt"
 
 def part_one():
     text = ""

@@ -90,16 +90,13 @@ def part_two(input: list[str]) -> int:
 
 def get_starting_point(input: list[str]) -> tuple[tuple]:
     starting_point = ()
-    end_point = ()
 
     for y, row in enumerate(input):
         for x, col in enumerate(row):
             if col == "S":
                 starting_point = x, y
-            if col == "E":
-                end_point = x, y
     
-    return starting_point, end_point
+    return starting_point
 
 if __name__ == "__main__":
     input_file_path = "input/day16input.txt"

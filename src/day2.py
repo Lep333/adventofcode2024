@@ -1,78 +1,62 @@
-input_file_path = "input/day2input.txt"
+import copy
 
-def parse() -> list:
+def parse(input: str) -> list:
+    input = input.split("\n")
     reports = []
-    with open(input_file_path, "r") as f:
-        for line in f:
-            reports.append([int(el) for el in line.split()])
+    for line in input:
+        reports.append([int(el) for el in line.split()])
 
     return reports
 
-def main():
-    part_one()
-    part_two()
-
-def part_one():
-    reports = parse()
-
+def part_one(reports: list[list[int]]) -> int:
     safe_report_sum = 0
     for report in reports:
-        inc = False
-        dec = False
-        safe_report = True
-        for i in range(len(report) - 1):
-            curr_element = report[i]
-            next_element = report[i + 1]
-
-            if curr_element < next_element:
-                inc = True
-            if curr_element > next_element:
-                dec = True
-            diff = abs(curr_element - next_element)
-            if diff > 3 or diff == 0:
-                safe_report = False
-        if inc and dec:
-            safe_report = False
-        if safe_report:
+        if report_is_safe(report):
             safe_report_sum += 1
-    print("safe reports: ", safe_report_sum)
+    return safe_report_sum
 
-def part_two():
-    reports = parse()
-
+def part_two(reports: list[list[int]]) -> int:
     safe_report_sum = 0
+    safe_report_list = []
     for report in reports:
-        inc = False
-        dec = False
-        problem_dampener_avail = True
-        safe_report = True
-        for i in range(len(report) - 1):
-            curr_element = report[i]
-            next_element = report[i + 1]
-
-            if curr_element < next_element:
-                if dec and problem_dampener_avail:
-                    problem_dampener_avail = False
-                    continue
-                inc = True
-            if curr_element > next_element:
-                if inc and problem_dampener_avail:
-                    problem_dampener_avail = False
-                    continue
-                else:
-                    dec = True
-            diff = abs(curr_element - next_element)
-            if diff > 3 or diff == 0:
-                if problem_dampener_avail:
-                    problem_dampener_avail = False
-                else:
-                    safe_report = False
-        if inc and dec:
-            safe_report = False
-        if safe_report:
+        if report_is_safe(report):
             safe_report_sum += 1
-    print("safe reports: ", safe_report_sum)
+            safe_report_list.append(report)
+        else:
+            for i in range(len(report)):
+                dampener_used = copy.copy(report)
+                dampener_used.pop(i)
+                if report_is_safe(dampener_used):
+                    # print(report, dampener_used)
+                    safe_report_list.append(report)
+                    safe_report_sum += 1
+                    break
+    return safe_report_sum
 
+def report_is_safe(report: list[int]) -> bool:
+    inc = False
+    dec = False
+    safe_report = True
+    for i in range(len(report) - 1):
+        curr_element = report[i]
+        next_element = report[i + 1]
+
+        if curr_element < next_element:
+            inc = True
+        if curr_element > next_element:
+            dec = True
+        diff = abs(curr_element - next_element)
+        if diff > 3 or diff == 0:
+            safe_report = False
+    if inc and dec:
+        safe_report = False
+    return safe_report
 
 if __name__ == "__main__":
-    main()
+    input_file_path = "input/day2input.txt"
+    text = ""
+    with open(input_file_path, "r") as f:
+        text = f.read()
+    input = parse(text)
+    print("safe reports part one: ", part_one(input))
+    print("safe reports part two: ", part_two(input))

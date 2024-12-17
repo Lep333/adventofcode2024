@@ -1,11 +1,10 @@
 input_file_path = "input/day5input.txt"
 
-def part_one():
-    text = ""
-    
+def parse() -> str:
     with open(input_file_path, "r") as f:
-        text = f.read()
-
+        return f.read()
+    
+def part_one(text: str) -> int:
     order_rules, orders = text.split("\n\n")
     order_rules = order_rules.split("\n")
 
@@ -32,14 +31,9 @@ def part_one():
                 curr_rules.extend(rules)
         if valid_update:
             total_middle_page_number += int(order_pages[int(len(order_pages) / 2)])
-    print(total_middle_page_number)
+    return total_middle_page_number
 
-def part_two():
-    text = ""
-    
-    with open(input_file_path, "r") as f:
-        text = f.read()
-
+def part_two(text: str) -> int:
     order_rules, orders = text.split("\n\n")
     order_rules = order_rules.split("\n")
 
@@ -62,14 +56,27 @@ def part_two():
             if rules := rule_book.get(order_pages[i]):
                 curr_rules.extend(rules)
             if order_pages[i] in curr_rules:
-                order_pages[i - 1], order_pages[i] = order_pages[i], order_pages[i - 1]
                 changed = True
+        if changed:
+            while True:
+                new_sorting = False
+                for n in range(len(order_pages) - 1):
+                    if before_element := rule_book.get(order_pages[n]):
+                        for el in before_element:
+                            for i in range(len(order_pages)):
+                                if el == order_pages[i] and n < i:
+                                    order_pages[n], order_pages[i] = order_pages[i], order_pages[n]
+                                    new_sorting = True
+                                    break
+                if not new_sorting:
+                    break
 
         if changed:
             total_middle_page_number += int(order_pages[int(len(order_pages) / 2)])
-    print(total_middle_page_number)
+    return total_middle_page_number
 
 
 if __name__ == "__main__":
-    part_one()
-    part_two()
+    input = parse()
+    print("part one: ", part_one(input))
+    print("part two: ", part_two(input))

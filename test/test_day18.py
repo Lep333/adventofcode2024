@@ -33,7 +33,7 @@ class TestDay18(unittest.TestCase):
             input[i] = list(map(int, line.split(",")))
         dimension = 7
         field = day18.build_map(input, 12, dimension)
-        result, _= day18.part_one(field, (0,0), (6,6))
+        result = day18.part_one(field, (0,0), (6,6))
         self.assertEqual(result, 22)
 
     def test_part_two(self):

@@ -1,4 +1,4 @@
-import copy
+import math
 
 def build_map(input: list[list[int]], falling_onto_mem: int, dimension: int) -> list[list[str]]:
     map = []
@@ -12,44 +12,45 @@ def build_map(input: list[list[int]], falling_onto_mem: int, dimension: int) -> 
         map[input[i][1]][input[i][0]] = "#"
     return map
 
-def part_one(map: list[list[str]], start: tuple, end: tuple, history = None) -> tuple:
+def part_one(map: list[list[str]], start: tuple, end: tuple) -> tuple:
     no_of_rows = len(map)
     no_of_cols = len(map[0])
-    queue = [(start, 0, [start])]
+    queue = [(start, 0)]
     visited = []
     directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
-    if history:
-        for point in history:
-            if map[point[1]][point[0]] == "#":
-                break
-        else:
-            return len(history), history
     while queue:
-        pos, path_len, hist = queue.pop(0)
+        pos, path_len = queue.pop(0)
 
         if pos == end:
-            return path_len, hist
+            return path_len
 
         for direction in directions:
             new_pos = pos[0] + direction[0], pos[1] + direction[1]
             if new_pos[0] >= 0 and new_pos[0] < no_of_cols and \
                 new_pos[1] >= 0 and new_pos[1] < no_of_rows \
                 and new_pos not in visited and map[new_pos[1]][new_pos[0]] != "#":
-                new_hist = copy.copy(hist)
-                new_hist.append(new_pos)
-                queue.append((new_pos, path_len + 1, new_hist))
+                queue.append((new_pos, path_len + 1))
                 visited.append(new_pos)
-    return None, None
 
 def part_two(input: list[list[int]], dimension: int, start: tuple, end: tuple, start_iter: int) -> tuple:
-    history = None
     field = build_map(input, start_iter, dimension)
-    for i in range(start_iter, len(input)):
-        field[input[i][1]][input[i][0]] = "#"
-        result, history = part_one(field, start, end, history)
+    upper = len(input)
+    lower = 0
+    i = math.floor(len(input) / 2)
+    next_iter = 0
+    while True:
+        field = build_map(input, i, dimension)
+        result = part_one(field, start, end)
         if not result:
+            upper = i
+            next_iter = i - math.floor((upper - lower) / 2)
+        else:
+            lower = i
+            next_iter = i + math.floor((upper - lower) / 2)
+        if i == next_iter:
             return input[i]
+        i = math.floor(next_iter)
 
 if __name__ == "__main__":
     input_file_path = "input/day18input.txt"
@@ -65,5 +66,5 @@ if __name__ == "__main__":
     end = (70, 70)
     dimension = 71
     
-    print("result part one: ", part_one(map, start, end)[0])
+    print("result part one: ", part_one(map, start, end))
     print("result part two: ", part_two(input, dimension, start, end, 1024))

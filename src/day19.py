@@ -32,43 +32,31 @@ def part_one(towels: list[str], patterns: list[str]) -> int:
 
 def part_two(towels: list[str], patterns: list[str]) -> int:
     total = 0
+
     for pattern in patterns:
-        stack = [[0]]
-        index_tried = []
-        possible_variations_from_index = {}
-        index_to_sum = []
+        stack = [0]
+        mem = {}
         while stack:
-            el = stack.pop()
-            index  = el[-1]
+            index = stack.pop()
+
             for towel in towels:
-                new_index = index + len(towel)
-                slice = pattern[index:new_index]
-                if slice == towel:
-                    new_el = copy.copy(el)
-                    new_el.append(new_index)
-                    if len(pattern) == new_index:
-                        for ind in new_el:
-                            if possible_variations_from_index.get(ind):
-                                possible_variations_from_index[ind] += 1
-                            else:
-                                possible_variations_from_index[ind] = 1
-                        continue
-                    if not new_index in index_tried:
-                        stack.append(new_el)
-                        index_tried.append(new_index)
+                next_index = len(towel) + index
+                subpattern = pattern[index:next_index]
+                if subpattern == towel:
+                    if el := mem.get(index):
+                        for i, tup in enumerate(el):
+                            if tup[0] == subpattern:
+                                el[i] = (tup[0], tup[1] + 1)
+                                continue
+                        else:
+                            el.append((subpattern, 1))
+                            stack.append(next_index)
                     else:
-                        if possible_variations_from_index.get(new_index):
-                            index_to_sum.append(new_el)
-        index_to_sum.sort(reverse=True)
-        for el in index_to_sum:
-            last_el = el[-1] 
-            for ind in el:
-                if not possible_variations_from_index.get(ind):
-                    possible_variations_from_index[ind] = possible_variations_from_index[last_el]
-                else:
-                    possible_variations_from_index[ind] += possible_variations_from_index[last_el]
-        if variation_sum := possible_variations_from_index.get(0):
-            total += variation_sum
+                        mem[index] = [(subpattern, 1)]
+                        stack.append(next_index)
+
+
+
     return total
 
 if __name__ == "__main__":

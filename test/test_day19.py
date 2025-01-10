@@ -31,3 +31,18 @@ bbrgwb"
         input = day19.parse(input)
         result = day19.part_two(*input)
         self.assertEqual(result, 16)
+
+    def test_part_two2(self):
+        input = "t, e, s, st, te, tes, i\n\
+\n\
+testi"
+
+# testi
+# t, e, s, t, i
+# t, e, st, i
+# te, s, t, i
+# te, st, i
+# tes, t, i
+        input = day19.parse(input)
+        result = day19.part_two(*input)
+        self.assertEqual(result, 5)

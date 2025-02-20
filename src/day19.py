@@ -1,5 +1,3 @@
-import copy
-
 def parse(text: str) -> tuple[list[str], list[str]]:
     towels, patterns = text.split("\n\n")
     towels = towels.split(", ")
@@ -34,29 +32,22 @@ def part_two(towels: list[str], patterns: list[str]) -> int:
     total = 0
 
     for pattern in patterns:
-        stack = [0]
-        mem = {}
-        while stack:
-            index = stack.pop()
-
+        mem = dict()
+        mem[0] = 1
+        for i in range(len(pattern)):
+            if not mem.get(i):
+                continue
+            start_index = i
+            times = mem[i]
             for towel in towels:
-                next_index = len(towel) + index
-                subpattern = pattern[index:next_index]
-                if subpattern == towel:
-                    if el := mem.get(index):
-                        for i, tup in enumerate(el):
-                            if tup[0] == subpattern:
-                                el[i] = (tup[0], tup[1] + 1)
-                                continue
-                        else:
-                            el.append((subpattern, 1))
-                            stack.append(next_index)
+                end_index = start_index + len(towel)
+                if towel == pattern[start_index: end_index]:
+                    if old_times := mem.get(end_index):
+                        mem[end_index] = old_times + times
                     else:
-                        mem[index] = [(subpattern, 1)]
-                        stack.append(next_index)
-
-
-
+                        mem[end_index] = times
+        if subtotal_times := mem.get(len(pattern)):
+            total += subtotal_times
     return total
 
 if __name__ == "__main__":

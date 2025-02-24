@@ -43,82 +43,66 @@ def part_one(input: list[str]) -> int:
             area_size = 0
             fence_length = 0
             visited_fields_current_field = []
-    print("found regions: ", regions)
-    print("no visited fields: ", len(visited_fields))
     return total_cost
 
-def part_two(input: list[str]):
-    total_cost = 0
+def part_two(input: list[list[str]]) -> int:
+    total = 0
     visited_fields = []
-    regions = 0
-
-    for y, row in enumerate(input):
-        for x, char in enumerate(row):
+    local_fields = []
+    for y, line in enumerate(input):
+        for x, plant in enumerate(line):
             if (x, y) in visited_fields:
                 continue
-            fences, vis_fields = group_fences(input, (x, y))
-            visited_fields.extend(vis_fields)
-            regions += 1
-            for key, fences_ in fences.items():
-                combined_fences = []
-                for fence in fences_:
-                    one = (fence[0] -1, fence[1], fence[2]) if fence[2] == 0 else (fence[0], fence[1] -1, fence[2])
-                    two = (fence[0] +1, fence[1], fence[2]) if fence[2] == 0 else (fence[0], fence[1] +1, fence[2])
-                    for c_fence in combined_fences:
-                        if one in c_fence or two in c_fence:
-                            c_fence.append(fence)
-                            break
-                    else:
-                        combined_fences.append([fence])
-                total_cost += len(combined_fences) * len(vis_fields)
+            fences, local_fields = get_fences_and_fields(input, (x, y))
+            fences = get_connected_fences(fences)
+            total += len(fences) * len(local_fields)
+            visited_fields.extend(local_fields)
+            local_fields = []
+    return total
 
-    print("regions found: ", regions)
-    print("no visited fields: ", len(visited_fields))
-    return total_cost
-
-def group_fences(input: list[str], start: tuple[int]) -> dict[list]:
-    # horizontal = 0
-    # vertical = 1
-    fences = dict()
+def get_fences_and_fields(input: list[list[str]], start: tuple) -> tuple:
+    line_nos = len(input[0])
+    row_nos = len(input)
+    fences = [] 
+    local_fields = []
     queue = [start]
-    neighbours_directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    visited_fields = [start]
-
+    neighbours_directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+    
     while queue:
-        x, y = queue.pop(0)
-    # for y, row in enumerate(input):
-    #     for x, char in enumerate(row):
-    #         curr_plant = input[y][x]
-        curr_plant = input[y][x]
+        field = queue.pop(0)
+        if field in local_fields:
+            continue
+        local_fields.append(field)
+        # check neighbours
+        for fence_type, direction in enumerate(neighbours_directions):
+            if not out_of_bounds(input, field[0] + direction[0], field[1] + direction[1]) \
+                and input[field[1] + direction[1]][field[0] + direction[0]] == input[field[1]][field[0]]:
+                queue.append((field[0] + direction[0], field[1] + direction[1]))
+            else:
+                fences.append([(field[0], field[1], fence_type)])
+    return fences, local_fields
 
-        for direction in neighbours_directions:
-            new_x = x + direction[0]
-            new_y = y + direction[1]
-            if (not out_of_bounds(input, new_x, new_y)) and input[new_y][new_x] == curr_plant and (new_x, new_y) not in visited_fields:
-                queue.append((new_x, new_y))
-                visited_fields.append((new_x, new_y))
-        
-        if not fences.get(curr_plant):
-            fences[curr_plant] = []
-
-        # top
-        if out_of_bounds(input, x, y - 1) or input[y - 1][x] != curr_plant:
-            fence_list = fences[curr_plant]
-            fence_list.append((x, y, 0))
-        # right
-        if out_of_bounds(input, x + 1, y) or input[y][x + 1] != curr_plant:
-            fence_list = fences[curr_plant]
-            fence_list.append((x + 1, y, 1))
-        # bottom
-        if out_of_bounds(input, x, y + 1) or input[y + 1][x] != curr_plant:
-            fence_list = fences[curr_plant]
-            fence_list.append((x, y + 1, 0))
-        # left
-        if out_of_bounds(input, x - 1, y) or input[y][x - 1] != curr_plant:
-            fence_list = fences[curr_plant]
-            fence_list.append((x, y, 1))
-
-    return fences, visited_fields
+def get_connected_fences(fences: list[list[tuple]]) -> list[list[tuple]]:
+    for i in range(len(fences)):
+        fence_is_subset = False
+        fence = fences.pop(0)
+        for fence_og_el in fence:
+            if fence_is_subset:
+                break
+            left_neighbour = (fence_og_el[0] - 1, fence_og_el[1], fence_og_el[2])
+            top_neighbour = (fence_og_el[0], fence_og_el[1] - 1, fence_og_el[2])
+            right_neighbour = (fence_og_el[0] + 1, fence_og_el[1], fence_og_el[2])
+            bottom_neighbour = (fence_og_el[0], fence_og_el[1] + 1, fence_og_el[2])
+            neighbour1 =  left_neighbour if fence_og_el[2] % 2 == 0 else top_neighbour
+            neighbour2 =  right_neighbour if fence_og_el[2] % 2 == 0 else bottom_neighbour
+            for straight_fence in fences:
+                if neighbour1 in straight_fence or neighbour2 in straight_fence:
+                    straight_fence.extend(fence)
+                    fence_is_subset = True
+                    break
+        if not fence_is_subset:
+            fences.append(fence)
+    return fences
 
 def out_of_bounds(input: list[str], x: int, y: int) -> bool:
     no_of_cols = len(input[0])

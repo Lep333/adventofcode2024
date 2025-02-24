@@ -60,8 +60,35 @@ MMMISSJEEE"
         input = "OOOOO\n\
 OXOXO\n\
 OOOOO\n\
-OXOXO\n\
+OXXXO\n\
+AOOOO"
+        input = input.split()
+        result = day12.part_two(input)
+        self.assertEqual(result, 19*18+4+3*4+2*4)
+
+    def test_part_two6(self):
+        input = "WWWWWW\n\
+WWWWWW\n\
+WWWMWW\n\
+WWMMWW"
+        input = input.split()
+        result = day12.part_two(input)
+        self.assertEqual(result, 21*10 + 3*6)
+
+    def test_part_two7(self):
+        input = "OOOOO\n\
+OXXXO\n\
+OXXXO\n\
+OXXXO\n\
 OOOOO"
         input = input.split()
         result = day12.part_two(input)
-        self.assertEqual(result, 436)
+        self.assertEqual(result, 16*8+9*4)
+
+    def test_part_two8(self):
+        input = "AABBB\n\
+BBAAA\n\
+BAAAA"
+        input = input.split()
+        result = day12.part_two(input)
+        self.assertEqual(result, 80)

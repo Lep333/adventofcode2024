@@ -35,12 +35,14 @@ def part_one(input: tuple) -> int:
             target_field = move_target(map, robo_pos, directions[3])
             if target_field:
                 map = execute_move(map, robo_pos, target_field, directions[3])
-    
+    return calculate_result(map)
+
+def calculate_result(map: list[str]) -> int:
     # calculate result
     result = 0
     for y, row in enumerate(map):
         for x, char in enumerate(row):
-            if char == "O":
+            if char in ["O", "["]:
                 result += y * 100 + x
     return result
 
@@ -99,57 +101,80 @@ def part_two(input: tuple) -> int:
                 row_str += "@."
             if char == "O":
                 row_str += "[]"
-        new_map.append(row_str)
+        new_map.append(list(row_str))
     robo_pos = find_robot(new_map)
 
-        # directions x, y
+    # directions x, y
     directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
     # move robo
     for char in input[1]:
         robo_pos = find_robot(new_map)
         if char == ">":
-            get_everything_moving(new_map, robo_pos, directions[0])
-            target_field = move_target(map, robo_pos, directions[0])
-            if target_field:
-                map = execute_move(map, robo_pos, target_field, directions[0])
+            move_horizontal(new_map, robo_pos, directions[0])
         if char == "v":
-            get_everything_moving(new_map, robo_pos, directions[1])
-            target_field = move_target(map, robo_pos, directions[1])
-            if target_field:
-                map = execute_move(map, robo_pos, target_field, directions[1])
+            move_vertical(new_map, robo_pos, directions[1])
         if char == "<":
-            get_everything_moving(new_map, robo_pos, directions[2])
-            if target_field:
-                map = execute_move(map, robo_pos, target_field, directions[2])
+            move_horizontal(new_map, robo_pos, directions[2])
         if char == "^":
-            get_everything_moving(new_map, robo_pos, directions[3])
-            if target_field:
-                map = execute_move(map, robo_pos, target_field, directions[3])
+            move_vertical(new_map, robo_pos, directions[3])
     
+    return calculate_result(new_map)
 
-def get_everything_moving(map: list[str], robo_pos: tuple, direction: tuple):
-    no_rows = len(map)
-    no_cols = len(map[0])
-    i = 1
-    queue = [robo_pos]
-    moveing_group = []
-    while queue:
-        new_pos = queue.pop()
-        new_pos = new_pos[0] + direction[0], new_pos[1] + direction[1]
-        if map[new_pos[1]][new_pos[0]] == "[":
-            moveing_group.append(new_pos)
-            moveing_group.append((new_pos[0] + 1, new_pos[1]))
-            queue.append(new_pos)
-            queue.append((new_pos[0] + 1, new_pos[1]))
-        if map[new_pos[1]][new_pos[0]] == "]":
-            moveing_group.append(new_pos)
-            moveing_group.append((new_pos[0] - 1, new_pos[1]))
-            queue.append(new_pos)
-            queue.append((new_pos[0] - 1, new_pos[1]))
+def move_horizontal(map: list[str], robo_pos: tuple, direction: tuple):
+    new_pos = (robo_pos[0] + direction[0], robo_pos[1] + direction[1])
+    i = 0
+    while map[new_pos[1]][new_pos[0]] not in ["#", "."]:
+        new_pos = (new_pos[0] + direction[0], new_pos[1] + direction[1])
         i += 1
-    print("ente")
+    if map[new_pos[1]][new_pos[0]] == ".":
+        switch_pos = new_pos[0] - direction[0], new_pos[1] - direction[1]
+        for _ in range(i + 1):
+            temp = map[switch_pos[1]][switch_pos[0]]
+            map[switch_pos[1]][switch_pos[0]] = map[new_pos[1]][new_pos[0]]
+            map[new_pos[1]][new_pos[0]] = temp
+            new_pos = switch_pos
+            switch_pos = switch_pos[0] - direction[0], switch_pos[1] - direction[1]
 
+def move_vertical(map: list[str], robo_pos: tuple, direction: tuple):
+    moveing_group = find_fields_to_move(map, robo_pos, direction)
+    move_group(map, moveing_group, direction)
+
+def find_fields_to_move(map: list[str], robo_pos: tuple, direction: tuple) -> list:
+    move_group = []
+    queue = [robo_pos]
+    visited_fields = []
+    while queue:
+        pos = queue.pop(0)
+        
+        if map[pos[1]][pos[0]] == "." or pos in visited_fields:
+            continue
+        visited_fields.append(pos)
+        move_group.append(pos)
+
+        # check if in move direction boxes
+        new_pos = pos[0] + direction[0], pos[1] + direction[1]
+        if map[new_pos[1]][new_pos[0]] == "[":
+            # add right part of box
+            pos_box_right_part = new_pos[0] + 1, new_pos[1]
+            queue.append(pos_box_right_part)
+        if map[new_pos[1]][new_pos[0]] == "]":
+            # add left part of box
+            pos_box_left_part = new_pos[0] - 1, new_pos[1]
+            queue.append(pos_box_left_part)
+        # collision detection
+        if map[new_pos[1]][new_pos[0]] == "#":
+            return
+        queue.append(new_pos)
+    return move_group
+
+def move_group(map: list[str], move_group: list, direction: tuple):
+    while move_group:
+        pos1 = move_group.pop()
+        swap_pos = pos1[0] + direction[0], pos1[1] + direction[1]
+        temp = map[swap_pos[1]][swap_pos[0]]
+        map[swap_pos[1]][swap_pos[0]] = map[pos1[1]][pos1[0]]
+        map[pos1[1]][pos1[0]] = temp
 
 if __name__ == "__main__":
     input = parse(input_file_path)

@@ -33,7 +33,8 @@ def part_one(input: list[str]) -> int:
         poss_moves = []
         # control num pad
         for char in el:
-            poss_moves.append(get_instruction(numeric_keypad, curr_field, char))
+            poss_moves.append(breadth_first_search(numeric_keypad, curr_field, char))
+            #poss_moves.append(get_instruction(numeric_keypad, curr_field, char))
             curr_field = char
         poss_moves = create_str_combinations(poss_moves)
         # control robo 1
@@ -69,6 +70,20 @@ def get_instruction(pad, start: str, end: str) -> list[str]:
     move_str = ""
     move_str1 = ""
     move_str2 = ""
+    # if len(pad) == 5:
+    #     # left
+    #     if diff[0] > 0: 
+    #         move_str += diff[0] * dir_symbols[2]
+    #     else:
+    #     # right
+    #         move_str +=  abs(diff[0]) * dir_symbols[0]
+    #     if diff[1] < 0:
+    #     # top
+    #         return [move_str + abs(diff[1]) * dir_symbols[3] + "A"]
+    #     else:
+    #     # bot
+    #         return [diff[1] * dir_symbols[1] + move_str + "A"]
+
     # left
     if diff[0] > 0: 
         move_str += diff[0] * dir_symbols[2]
@@ -105,6 +120,32 @@ def create_str_combinations(poss_moves: list[list[str]]) -> list[str]:
                 combined_moves.append(move + move2)
         poss_moves.insert(0, combined_moves)
     return combined_moves
+
+def breadth_first_search(keypad, start: tuple, end: tuple):
+    start = keypad[start]
+    end = keypad[end]
+    directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+    dir_symbols = [">", "^", "<", "v"]
+    visited_fields = []
+    queue = [(start, "")]
+    routes = []
+
+    while queue:
+        field, move_str = queue.pop(0)
+
+        visited_fields.append(field)
+
+        if field == end:
+            routes.append(move_str + "A")
+
+
+        for i, direction in enumerate(directions):
+            new_el = field[0] + direction[0], field[1] + direction[1]
+            
+            if new_el[0] < 3 and new_el[1] < 4 and new_el != (0, 0)  and new_el[0] >= 0 and new_el[1] >= 0 and new_el not in visited_fields:
+                queue.append((new_el, move_str + dir_symbols[i]))
+    
+    return routes
 
 if __name__ == "__main__":
     input = parse()

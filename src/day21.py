@@ -1,5 +1,25 @@
 input_file_path = "input/day21input.txt"
 
+numeric_keypad = {}
+numeric_keypad["0"] = (1, 0)
+numeric_keypad["A"] = (2, 0)
+numeric_keypad["1"] = (0, 1)
+numeric_keypad["2"] = (1, 1)
+numeric_keypad["3"] = (2, 1)
+numeric_keypad["4"] = (0, 2)
+numeric_keypad["5"] = (1, 2)
+numeric_keypad["6"] = (2, 2)
+numeric_keypad["7"] = (0, 3)
+numeric_keypad["8"] = (1, 3)
+numeric_keypad["9"] = (2, 3)
+
+dir_keypad = {}
+dir_keypad["<"] = (0, 0)
+dir_keypad["v"] = (1, 0)
+dir_keypad[">"] = (2, 0)
+dir_keypad["^"] = (1, 1)
+dir_keypad["A"] = (2, 1)
+
 def parse() -> list[str]:
     input = ""
     with open(input_file_path, "r") as f:
@@ -7,25 +27,6 @@ def parse() -> list[str]:
     return input.split("\n")
 
 def part_one(input: list[str]) -> int:
-    numeric_keypad = {}
-    numeric_keypad["0"] = (1, 0)
-    numeric_keypad["A"] = (2, 0)
-    numeric_keypad["1"] = (0, 1)
-    numeric_keypad["2"] = (1, 1)
-    numeric_keypad["3"] = (2, 1)
-    numeric_keypad["4"] = (0, 2)
-    numeric_keypad["5"] = (1, 2)
-    numeric_keypad["6"] = (2, 2)
-    numeric_keypad["7"] = (0, 3)
-    numeric_keypad["8"] = (1, 3)
-    numeric_keypad["9"] = (2, 3)
-
-    dir_keypad = {}
-    dir_keypad["<"] = (0, 0)
-    dir_keypad["v"] = (1, 0)
-    dir_keypad[">"] = (2, 0)
-    dir_keypad["^"] = (1, 1)
-    dir_keypad["A"] = (2, 1)
     total = 0
     for el in input:
         curr_field = "A"
@@ -70,19 +71,19 @@ def get_instruction(pad, start: str, end: str) -> list[str]:
     move_str = ""
     move_str1 = ""
     move_str2 = ""
-    # if len(pad) == 5:
-    #     # left
-    #     if diff[0] > 0: 
-    #         move_str += diff[0] * dir_symbols[2]
-    #     else:
-    #     # right
-    #         move_str +=  abs(diff[0]) * dir_symbols[0]
-    #     if diff[1] < 0:
-    #     # top
-    #         return [move_str + abs(diff[1]) * dir_symbols[3] + "A"]
-    #     else:
-    #     # bot
-    #         return [diff[1] * dir_symbols[1] + move_str + "A"]
+    if len(pad) == 5:
+        # left
+        if diff[0] > 0: 
+            move_str += diff[0] * dir_symbols[2]
+        else:
+        # right
+            move_str +=  abs(diff[0]) * dir_symbols[0]
+        if diff[1] < 0:
+        # top
+            return [move_str + abs(diff[1]) * dir_symbols[3] + "A"]
+        else:
+        # bot
+            return [diff[1] * dir_symbols[1] + move_str + "A"]
 
     # left
     if diff[0] > 0: 
@@ -147,6 +148,76 @@ def breadth_first_search(keypad, start: tuple, end: tuple):
     
     return routes
 
+def part_two(input: list[str], n = 25) -> int:
+    total = 0
+    for el in input:
+        curr_field = "A"
+        poss_moves = []
+        # control num pad
+        for char in el:
+            poss_moves.append(breadth_first_search(numeric_keypad, curr_field, char))
+            curr_field = char
+        poss_moves = create_str_combinations(poss_moves)
+        poss_moves.sort(reverse=True)
+
+        # control robo 1..25
+        memo = dict()
+        min_length = 0
+        for path in poss_moves:
+            partitions = partition_start_str(path)
+            for _ in range(n):
+                apply_productions(memo, partitions)
+                partitions = dict()
+                set_partitions(memo, partitions)
+            total_length = 0
+            for key, times in partitions.items():
+                total_length += len(key) * times
+            input_as_int = int(el[:-1])
+            if not min_length:
+                min_length = total_length
+            if total_length < min_length:
+                min_length = total_length
+        total += min_length * input_as_int
+    return(total)
+
+def partition_start_str(path_str: str) -> dict:
+    partitions = dict()
+    prev = 0
+    for n, char in enumerate(path_str):
+        if char == "A":
+            key = path_str[prev:n + 1]
+            if partitions.get(key):
+                partitions[key] += 1
+            else:
+                partitions[key] = 1
+            prev = n + 1
+    return partitions
+
+def set_partitions(memo, partitions):
+    for key, val in memo.items():
+        production, n_prod = val
+        partition = partition_start_str(production)
+        for parti, times in partition.items():
+            if partitions.get(parti):
+                partitions[parti] +=  n_prod * times
+            else:
+                partitions[parti] = n_prod * times
+        memo[key] = (production, 0)
+
+def apply_productions(memo, partitions):
+    for key, n in partitions.items():
+        if result := memo.get(key):
+            result_str, result_n = result
+            memo[key] = (result_str, result_n + n)
+        else:
+            substr = ""
+            curr_char = "A"
+            for char in key:
+                substr += get_instruction(dir_keypad, curr_char, char)[0]
+                curr_char = char
+            memo[key] = (substr, n)
+
 if __name__ == "__main__":
     input = parse()
     print("part one: ", part_one(input))
+    print("part two: ", part_two(input))
